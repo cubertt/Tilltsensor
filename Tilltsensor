@@ -1,0 +1,48 @@
+blueprint:
+  name: Fensterpositions-Sensor
+  description: Erstelle einen Template-Sensor basierend auf XYZ-Beschleunigungswerten
+  domain: automation
+  input:
+    sensor_x:
+      name: X-Achsen-Sensor
+      selector:
+        entity:
+          domain: sensor
+    sensor_y:
+      name: Y-Achsen-Sensor
+      selector:
+        entity:
+          domain: sensor
+    sensor_z:
+      name: Z-Achsen-Sensor
+      selector:
+        entity:
+          domain: sensor
+  
+trigger:
+  - platform: state
+    entity_id: !input sensor_x
+  - platform: state
+    entity_id: !input sensor_y
+  - platform: state
+    entity_id: !input sensor_z
+  
+action:
+  - service: input_select.select_option
+    target:
+      entity_id: input_select.window_position
+    data:
+      option: >-
+        {% set x = states(input.sensor_x) | float %}
+        {% set y = states(input.sensor_y) | float %}
+        {% set z = states(input.sensor_z) | float %}
+        
+        {% if x > 100 and y > 900 and z < -100 %}
+          Geschlossen
+        {% elif x > 50 and y > 500 and z < 0 %}
+          Leicht geöffnet
+        {% else %}
+          Offen
+        {% endif %}
+  
+mode: restart
