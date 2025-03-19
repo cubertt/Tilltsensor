@@ -18,7 +18,31 @@ blueprint:
       selector:
         entity:
           domain: sensor
-  
+    threshold_closed_x:
+      name: X-Wert für Geschlossen
+      selector:
+        number:
+          min: 0
+          max: 2000
+          step: 1
+          unit_of_measurement: ""
+    threshold_closed_y:
+      name: Y-Wert für Geschlossen
+      selector:
+        number:
+          min: 0
+          max: 2000
+          step: 1
+          unit_of_measurement: ""
+    threshold_closed_z:
+      name: Z-Wert für Geschlossen
+      selector:
+        number:
+          min: -2000
+          max: 2000
+          step: 1
+          unit_of_measurement: ""
+
 trigger:
   - platform: state
     entity_id: !input sensor_x
@@ -26,7 +50,7 @@ trigger:
     entity_id: !input sensor_y
   - platform: state
     entity_id: !input sensor_z
-  
+
 action:
   - service: input_select.select_option
     target:
@@ -36,13 +60,16 @@ action:
         {% set x = states(input.sensor_x) | float %}
         {% set y = states(input.sensor_y) | float %}
         {% set z = states(input.sensor_z) | float %}
+        {% set closed_x = !input threshold_closed_x | float %}
+        {% set closed_y = !input threshold_closed_y | float %}
+        {% set closed_z = !input threshold_closed_z | float %}
         
-        {% if x > 100 and y > 900 and z < -100 %}
+        {% if x > closed_x and y > closed_y and z < closed_z %}
           Geschlossen
-        {% elif x > 50 and y > 500 and z < 0 %}
+        {% elif x > (closed_x * 0.5) and y > (closed_y * 0.5) and z < (closed_z * 0.5) %}
           Leicht geöffnet
         {% else %}
           Offen
         {% endif %}
-  
+
 mode: restart
